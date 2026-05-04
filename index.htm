@@ -11,6 +11,21 @@
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <!-- 引入 Babel -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- 👇👇👇 Google Analytics 追蹤代碼開始 👇👇👇 -->
+    <script>
+        const GA_MEASUREMENT_ID = 'G-XXXXXXXXXX'; // 記得換返做你嘅 ID
+    </script>
+    <script async id="gtag-script"></script>
+    <script>
+        document.getElementById('gtag-script').src = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`;
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', GA_MEASUREMENT_ID);
+    </script>
+    <!-- 👆👆👆 Google Analytics 追蹤代碼結束 👆👆👆 -->
+
     <style>
         body { margin: 0; overflow: hidden; background-color: black; font-family: sans-serif; }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
@@ -137,7 +152,16 @@
             chosen.forEach(t => { total += toppingPrices[t]; });
             const toppingsStr = chosen.length === 0 ? "淨" : chosen.map(t => `${t}(+$${toppingPrices[t]})`).join(' + ');
 
-            setResultText(`🍜 ${selectedBrand} - ${noodle}(+$${nExtra})\n🥣 ${soupDisplay}\n🥢 ${toppingsStr}\n\n💰 總計: $${total}\n(價錢僅供參考，一切以餐廳為準)`);
+            const finalResultText = `🍜 ${selectedBrand} - ${noodle}(+$${nExtra})\n🥣 ${soupDisplay}\n🥢 ${toppingsStr}\n\n💰 總計: $${total}\n(價錢僅供參考，一切以餐廳為準)`;
+            setResultText(finalResultText);
+
+            if (typeof gtag === 'function') {
+                gtag('event', 'generate_omakase', {
+                    'event_category': 'Mixian',
+                    'event_label': selectedBrand,
+                    'value': total
+                });
+            }
 
             setTimeout(() => {
               if (scrollRef.current) {
@@ -161,10 +185,12 @@
               if (cat === "topping") {
                 if (value === "全部隨機") {
                   if (currentCat.includes("全部隨機")) {
+                     // 解除「全部隨機」，回復分區隨機
                      const uniquePrices = [...new Set(Object.values(tPrices))].sort((a, b) => a - b);
-                     newFilters.topping = uniquePrices.map(p => `隨機_${p}`);
+                     currentCat = uniquePrices.map(p => `隨機_${p}`);
                   } else {
-                     newFilters.topping = ["全部隨機"];
+                     // 啟動「全部隨機」
+                     currentCat = ["全部隨機"];
                   }
                 } else {
                   if (currentCat.includes("全部隨機")) {
@@ -325,7 +351,6 @@
                     </div>
                   </div>
 
-                  {/* 實體佔位空間：確保結果框永遠可以拉到按鈕上方，唔會再被遮擋 */}
                   <div className="h-40 w-full flex-shrink-0"></div>
                 </div>
 
