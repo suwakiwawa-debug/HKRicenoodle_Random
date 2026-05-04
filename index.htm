@@ -2,7 +2,7 @@
 <html lang="zh-HK">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>米線我媽卡些 (Omakase)</title>
     <!-- 引入 Tailwind CSS 處理排版 -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -252,16 +252,17 @@
           const uniquePrices = [...new Set(Object.values(toppingPrices))].sort((a, b) => a - b);
 
           return (
-            <div className="relative h-screen w-full bg-black overflow-hidden flex justify-center font-sans">
+            <div className="relative h-[100dvh] w-full bg-black overflow-hidden flex justify-center font-sans">
               <div className="absolute inset-0 z-0 bg-cover bg-center" style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1552611052-33e04de081de?q=80&w=1000")' }}></div>
 
-              <div className="relative z-10 w-full max-w-md md:m-4 flex flex-col bg-black/75 md:rounded-2xl border-none md:border md:border-white/30 backdrop-blur-sm overflow-hidden shadow-2xl">
-                <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar pb-32">
+              <div className="relative z-10 w-full max-w-md h-[100dvh] md:h-auto md:max-h-[95vh] md:my-4 flex flex-col bg-black/75 md:rounded-2xl border-none md:border md:border-white/30 backdrop-blur-sm overflow-hidden shadow-2xl">
+                
+                <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar">
                   
                   {/* 標題與介紹詞 */}
-                  <div className="mb-8 text-center">
+                  <div className="mb-8 text-center pt-2">
                     <h1 className="text-2xl font-bold text-white mb-3">🥢 米線我媽卡些 (Omakase)</h1>
-                    <p className="text-gray-300 text-sm leading-relaxed bg-white/10 p-3 rounded-lg border border-white/10">
+                    <p className="text-gray-300 text-sm leading-relaxed bg-white/10 p-3 rounded-lg border border-white/10 shadow-inner">
                        專門治療全港選擇困難症！唔使再諗食邊間、加咩餸。將決策權交畀命運，撳一下，「遮遮」幫你搞定今日嘅命定米線。
                     </p>
                   </div>
@@ -318,15 +319,19 @@
                   </div>
 
                   {/* 生成結果區域 */}
-                  <div className="mt-8 mb-4">
+                  <div className="mt-8">
                     <div className="text-lg text-white font-bold text-center leading-relaxed whitespace-pre-wrap bg-white/20 p-5 rounded-xl border border-amber-500/50 shadow-[0_0_15px_rgba(245,158,11,0.2)]">
                       {resultText}
                     </div>
                   </div>
+
+                  {/* 實體佔位空間：確保結果框永遠可以拉到按鈕上方，唔會再被遮擋 */}
+                  <div className="h-40 w-full flex-shrink-0"></div>
                 </div>
 
-                <div className="absolute bottom-0 left-0 right-0 p-4 pt-10 bg-gradient-to-t from-black via-black/95 to-transparent">
-                  <button onClick={generateMixian} className="w-full bg-[#D35400] hover:bg-[#E67E22] text-white text-xl font-bold py-4 rounded-full shadow-lg transform active:scale-95 transition-all">
+                {/* 底部按鈕 */}
+                <div className="absolute bottom-0 left-0 right-0 px-4 pt-16 pb-[calc(1.5rem+env(safe-area-inset-bottom))] bg-gradient-to-t from-black via-black/95 to-transparent pointer-events-none">
+                  <button onClick={generateMixian} className="w-full bg-[#D35400] hover:bg-[#E67E22] text-white text-xl font-bold py-4 rounded-full shadow-lg transform active:scale-95 transition-all pointer-events-auto">
                     ✍️ 唔該，落單！
                   </button>
                 </div>
