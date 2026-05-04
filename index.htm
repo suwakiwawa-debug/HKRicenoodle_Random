@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>米線我媽卡些 (Omakase)</title>
+    <!-- 引入 Tailwind CSS 處理排版 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 React 核心庫 -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- 引入 Babel -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: black; font-family: sans-serif; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 10px; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        const menus = {
+          "譚仔": {
+            soups: ["清湯", "湖南酸辣", "重慶酸辣", "重慶麻辣", "鮮番茄湯", "泡椒酸菜魚湯", "香茜皮蛋魚湯"],
+            spicy: ["走辣", "10小", "5小", "4小", "3小", "2小", "小辣", "中辣", "大辣", "特辣"],
+            noodles: { "米線": 0, "薯粉": 2, "菜底": 3 },
+            toppings: {
+              "芽菜": 5, "芫茜": 5, "韭菜": 5, "韭菜花": 5, "生菜": 6, "金菇": 6, "菜心": 6,
+              "竹笙": 8, "木耳": 8, "豆卜": 8, "腐竹": 8, "豬肉": 10, "牛肉": 10, "雞肉": 10,
+              "魚蛋": 10, "牛丸": 10, "火腿": 10, "腩肉": 10, "豬潤": 10, "脆肉鯇": 10, "炸醬": 10, "墨丸": 10,
+              "墨魚春卷": 12, "魚片頭": 12, "皮蛋": 12, "貢丸": 12, "土匪雞翼": 15
+            }
+          },
+          "三哥": {
+            soups: ["清湯", "煳辣", "三哥酸辣", "重慶麻辣", "番茄湯", "煳麻湯", "砂砂湯"],
+            spicy: ["走辣", "10小", "5小", "4小", "3小", "2小", "小辣", "中辣", "大辣", "特辣"],
+            noodles: { "米線": 0, "薯粉": 2 },
+            toppings: {
+              "芽菜": 5, "韭菜": 5, "生菜": 6, "酸菜": 6, "木耳": 8, "腐竹": 8, "鮮冬菇": 8, "秀珍菇": 8, "豆卜": 8,
+              "豬肉": 10, "牛肉": 10, "雞肉": 10, "魚蛋": 10, "貢丸": 10, "香腸": 10, "蟹柳": 10, "腩肉": 10, "炸醬": 10,
+              "墨丸": 12, "魚腐": 12, "豬耳": 12, "芝士腸": 12, "魚片": 12, "土匪雞翼": 15, "豬大腸": 15
+            }
+          },
+          "雲桂香": {
+            soups: ["清湯(不辣)", "小鍋酸辣", "重慶麻酸辣", "港式胡椒湯", "蟲草花雞湯", "鮮魚湯", "熱拌(無湯)"],
+            spicy: ["不辣", "微辣", "小辣", "中小辣", "中辣", "中大辣", "大辣", "勁辣"],
+            noodles: { "米線": 0, "紅薯粉": 2, "水晶粉": 2, "菜底": 3 },
+            toppings: {
+              "酸菜": 6, "蘿蔔": 6, "芽菜": 6, "海帶": 6, "通菜": 6, "菜心": 6, "唐生菜": 6, "芥蘭": 6,
+              "紫菜": 8, "竹笙": 8, "黑木耳": 8, "腐竹": 8, "鮮冬菇": 8, "豬小肚": 10, "雞絲": 10, "炸醬": 10,
+              "腩肉": 10, "豬紅": 10, "豬肚": 10, "豬皮": 10, "冬菇": 10, "魚蛋": 10, "魚肉春卷": 12, "雲吞": 12,
+              "燕皮肉餃": 12, "肥牛": 12, "豬扒": 12, "豬頸肉": 12, "蟹子丸": 12, "墨魚丸": 12, "豬耳": 12,
+              "日本鱈魚豆腐": 15, "墨魚頭": 15, "豬軟骨": 15, "鮮竹龍蝦卷": 15, "鴨腎": 15
+            }
+          }
+        };
+
+        function App() {
+          const [selectedBrand, setSelectedBrand] = useState("譚仔");
+          const [activeFilters, setActiveFilters] = useState({
+            soup: [], spicy: [], noodle: [], count: [], topping: []
+          });
+          const [resultText, setResultText] = useState("請隨便設定範圍！");
+          const scrollRef = useRef(null);
+
+          useEffect(() => {
+            resetFilters("譚仔");
+          }, []);
+
+          const resetFilters = (brand) => {
+            const toppingPrices = menus[brand].toppings;
+            const uniquePrices = [...new Set(Object.values(toppingPrices))].sort((a, b) => a - b);
+            const initialToppings = uniquePrices.map(p => `隨機_${p}`);
+
+            setActiveFilters({
+              soup: ["隨機"],
+              spicy: ["隨機"],
+              noodle: ["米線"],
+              count: ["隨機"],
+              topping: initialToppings
+            });
+          };
+
+          const generateMixian = () => {
+            let total = 33;
+            const menu = menus[selectedBrand];
+            const random = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+            const soupPool = menu.soups;
+            const soup = activeFilters.soup.includes("隨機") ? random(soupPool) : random(activeFilters.soup);
+
+            let soupDisplay = soup;
+            if (!["清湯", "清湯(不辣)"].includes(soup)) {
+              total += 2;
+              const spicyPool = menu.spicy;
+              const spicy = activeFilters.spicy.includes("隨機") ? random(spicyPool) : random(activeFilters.spicy);
+
+              if (!["蟲草花雞湯", "鮮魚湯", "熱拌(無湯)", "香茜皮蛋魚湯", "港式胡椒湯"].includes(soup)) {
+                soupDisplay = `${soup} (${spicy}) [+$2]`;
+              } else {
+                soupDisplay = `${soup} [+$2]`;
+              }
+            }
+
+            let nPool = { ...menu.noodles };
+            if (soup === "熱拌(無湯)") delete nPool["菜底"];
+            const noodle = activeFilters.noodle.includes("隨機") ? random(Object.keys(nPool)) : activeFilters.noodle[0];
+            const nExtra = nPool[noodle] || 0;
+            total += nExtra;
+
+            const count = activeFilters.count.includes("隨機") ? (Math.floor(Math.random() * 4) + 2) : parseInt(activeFilters.count[0].replace("餸", ""));
+
+            const toppingPrices = menu.toppings;
+            const available = Object.keys(toppingPrices);
+            let chosen = [];
+
+            if (activeFilters.topping.includes("全部隨機")) {
+              const shuffled = [...available].sort(() => 0.5 - Math.random());
+              chosen = shuffled.slice(0, Math.min(count, available.length));
+            } else {
+              const randomPrices = activeFilters.topping.filter(v => v.startsWith("隨機_")).map(v => parseInt(v.split("_")[1]));
+              const manualToppings = activeFilters.topping.filter(v => available.includes(v));
+              chosen.push(...manualToppings);
+
+              if (chosen.length < count) {
+                const fillPool = available.filter(t => !chosen.includes(t) && randomPrices.includes(toppingPrices[t]));
+                fillPool.sort(() => 0.5 - Math.random());
+                chosen.push(...fillPool.slice(0, Math.min(count - chosen.length, fillPool.length)));
+              }
+            }
+
+            chosen.forEach(t => { total += toppingPrices[t]; });
+            const toppingsStr = chosen.length === 0 ? "淨" : chosen.map(t => `${t}(+$${toppingPrices[t]})`).join(' + ');
+
+            setResultText(`🍜 ${selectedBrand} - ${noodle}(+$${nExtra})\n🥣 ${soupDisplay}\n🥢 ${toppingsStr}\n\n💰 總計: $${total}\n(價錢僅供參考，一切以餐廳為準)`);
+
+            setTimeout(() => {
+              if (scrollRef.current) {
+                scrollRef.current.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
+              }
+            }, 100);
+          };
+
+          const handleChipClick = (cat, value) => {
+            if (cat === "brand") {
+              setSelectedBrand(value);
+              resetFilters(value);
+              return;
+            }
+
+            setActiveFilters(prev => {
+              const newFilters = { ...prev };
+              let currentCat = [...newFilters[cat]];
+              const tPrices = menus[selectedBrand].toppings;
+
+              if (cat === "topping") {
+                if (value === "全部隨機") {
+                  if (currentCat.includes("全部隨機")) {
+                     const uniquePrices = [...new Set(Object.values(tPrices))].sort((a, b) => a - b);
+                     newFilters.topping = uniquePrices.map(p => `隨機_${p}`);
+                  } else {
+                     newFilters.topping = ["全部隨機"];
+                  }
+                } else {
+                  if (currentCat.includes("全部隨機")) {
+                     const uniquePrices = [...new Set(Object.values(tPrices))].sort((a, b) => a - b);
+                     currentCat = uniquePrices.map(p => `隨機_${p}`);
+                  }
+                  if (value.startsWith("不加_")) {
+                    const p = parseInt(value.split("_")[1]);
+                    if (currentCat.includes(value)) {
+                      currentCat = currentCat.filter(v => v !== value);
+                      currentCat.push(`隨機_${p}`);
+                    } else {
+                      currentCat = currentCat.filter(v => !(v.endsWith(`_${p}`) || tPrices[v] === p));
+                      currentCat.push(value);
+                    }
+                  } else if (!value.startsWith("隨機_")) {
+                    const p = tPrices[value];
+                    currentCat = currentCat.filter(v => v !== `隨機_${p}` && v !== `不加_${p}`);
+                    if (currentCat.includes(value)) {
+                      currentCat = currentCat.filter(v => v !== value);
+                      if (!currentCat.some(v => tPrices[v] === p)) {
+                        currentCat.push(`隨機_${p}`);
+                      }
+                    } else {
+                      currentCat.push(value);
+                    }
+                  } else if (value.startsWith("隨機_")) {
+                     const p = parseInt(value.split("_")[1]);
+                     if (!currentCat.includes(value)) {
+                        currentCat = currentCat.filter(v => !(v.endsWith(`_${p}`) || tPrices[v] === p));
+                        currentCat.push(value);
+                     }
+                  }
+                }
+                newFilters.topping = currentCat;
+              } else {
+                if (value === "隨機") {
+                  newFilters[cat] = ["隨機"];
+                } else {
+                  currentCat = currentCat.filter(v => v !== "隨機");
+                  if (currentCat.includes(value)) {
+                    currentCat = currentCat.filter(v => v !== value);
+                  } else {
+                    currentCat.push(value);
+                  }
+                  if (currentCat.length === 0) newFilters[cat] = ["隨機"];
+                  newFilters[cat] = currentCat;
+                }
+              }
+              return newFilters;
+            });
+          };
+
+          const renderChip = (label, value, cat) => {
+            const isSelected = cat === "brand" ? selectedBrand === value : activeFilters[cat]?.includes(value);
+            let isEnabled = true;
+            const tPrices = menus[selectedBrand].toppings;
+
+            if (cat === "topping" && value !== "全部隨機") {
+              const isAllRandom = activeFilters.topping.includes("全部隨機");
+              const p = (value.startsWith("隨機_") || value.startsWith("不加_")) ? parseInt(value.split("_")[1]) : tPrices[value];
+              if (p !== undefined && (isAllRandom || (activeFilters.topping.includes(`不加_${p}`) && value !== `不加_${p}`))) {
+                isEnabled = false;
+              }
+            }
+
+            let bgClass = !isEnabled ? "bg-[#1A1A1A]" : (isSelected ? (cat === "brand" ? "bg-[#D35400]" : "bg-[#F1C40F]") : "bg-[#333333]");
+            let textClass = !isEnabled ? "text-[#4D4D4D]" : (isSelected && cat !== "brand" ? "text-black" : "text-white");
+            let borderClass = !isEnabled ? "border-white/5" : (isSelected ? "border-transparent" : "border-white/20");
+
+            return (
+              <button
+                key={value}
+                onClick={() => isEnabled && handleChipClick(cat, value)}
+                disabled={!isEnabled}
+                className={`m-1 px-3 py-2 min-w-[64px] text-sm font-bold rounded-full border ${bgClass} ${textClass} ${borderClass} transition-colors focus:outline-none`}
+              >
+                {label}
+              </button>
+            );
+          };
+
+          const menu = menus[selectedBrand];
+          const toppingPrices = menu.toppings;
+          const uniquePrices = [...new Set(Object.values(toppingPrices))].sort((a, b) => a - b);
+
+          return (
+            <div className="relative h-screen w-full bg-black overflow-hidden flex justify-center font-sans">
+              <div className="absolute inset-0 z-0 bg-cover bg-center" style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1552611052-33e04de081de?q=80&w=1000")' }}></div>
+
+              <div className="relative z-10 w-full max-w-md md:m-4 flex flex-col bg-black/75 md:rounded-2xl border-none md:border md:border-white/30 backdrop-blur-sm overflow-hidden shadow-2xl">
+                <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar pb-32">
+                  
+                  {/* 標題與介紹詞 */}
+                  <div className="mb-8 text-center">
+                    <h1 className="text-2xl font-bold text-white mb-3">🥢 米線我媽卡些 (Omakase)</h1>
+                    <p className="text-gray-300 text-sm leading-relaxed bg-white/10 p-3 rounded-lg border border-white/10">
+                       專門治療全港選擇困難症！唔使再諗食邊間、加咩餸。將決策權交畀命運，撳一下，「遮遮」幫你搞定今日嘅命定米線。
+                    </p>
+                  </div>
+
+                  <div className="mb-4">
+                    <h2 className="text-white font-bold mb-2">📍 先選餐廳 (切換會重置)</h2>
+                    <div className="flex flex-wrap">
+                      {Object.keys(menus).map(b => renderChip(b, b, "brand"))}
+                    </div>
+                  </div>
+
+                  <div className="mb-4">
+                    <h2 className="text-white font-bold mb-2">🥣 湯底</h2>
+                    <div className="flex flex-wrap">
+                      {["隨機", ...menu.soups].map(s => renderChip(s, s, "soup"))}
+                    </div>
+                  </div>
+
+                  <div className="mb-4">
+                    <h2 className="text-white font-bold mb-2">🌶️ 辣度</h2>
+                    <div className="flex flex-wrap">
+                      {["隨機", ...menu.spicy].map(s => renderChip(s, s, "spicy"))}
+                    </div>
+                  </div>
+
+                  <div className="mb-4">
+                    <h2 className="text-white font-bold mb-2">🍜 麵底</h2>
+                    <div className="flex flex-wrap">
+                      {["隨機", ...Object.keys(menu.noodles)].map(n => renderChip(n === "隨機" ? n : `${n}(+$${menu.noodles[n]})`, n, "noodle"))}
+                    </div>
+                  </div>
+
+                  <div className="mb-4">
+                    <h2 className="text-white font-bold mb-2">🥢 食材數量</h2>
+                    <div className="flex flex-wrap">
+                      {["隨機", "2餸", "3餸", "4餸", "5餸"].map(c => renderChip(c, c, "count"))}
+                    </div>
+                  </div>
+
+                  <div className="mb-6">
+                    <h2 className="text-white font-bold mb-2">🥬 食材</h2>
+                    {renderChip("全部隨機", "全部隨機", "topping")}
+
+                    {uniquePrices.map(p => (
+                      <div key={p} className="mt-3">
+                        <p className="text-gray-400 text-xs mb-1">${p} 區</p>
+                        <div className="flex flex-wrap">
+                          {renderChip("隨機", `隨機_${p}`, "topping")}
+                          {Object.keys(toppingPrices).filter(t => toppingPrices[t] === p).map(t => renderChip(`${t}(+$${p})`, t, "topping"))}
+                          {renderChip("不加", `不加_${p}`, "topping")}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* 生成結果區域 */}
+                  <div className="mt-8 mb-4">
+                    <div className="text-lg text-white font-bold text-center leading-relaxed whitespace-pre-wrap bg-white/20 p-5 rounded-xl border border-amber-500/50 shadow-[0_0_15px_rgba(245,158,11,0.2)]">
+                      {resultText}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="absolute bottom-0 left-0 right-0 p-4 pt-10 bg-gradient-to-t from-black via-black/95 to-transparent">
+                  <button onClick={generateMixian} className="w-full bg-[#D35400] hover:bg-[#E67E22] text-white text-xl font-bold py-4 rounded-full shadow-lg transform active:scale-95 transition-all">
+                    ✍️ 唔該，落單！
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
