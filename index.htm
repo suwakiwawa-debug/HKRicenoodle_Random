@@ -185,12 +185,10 @@
               if (cat === "topping") {
                 if (value === "全部隨機") {
                   if (currentCat.includes("全部隨機")) {
-                     // 解除「全部隨機」，回復分區隨機
                      const uniquePrices = [...new Set(Object.values(tPrices))].sort((a, b) => a - b);
-                     currentCat = uniquePrices.map(p => `隨機_${p}`);
+                     newFilters.topping = uniquePrices.map(p => `隨機_${p}`);
                   } else {
-                     // 啟動「全部隨機」
-                     currentCat = ["全部隨機"];
+                     newFilters.topping = ["全部隨機"];
                   }
                 } else {
                   if (currentCat.includes("全部隨機")) {
@@ -279,6 +277,7 @@
 
           return (
             <div className="relative h-[100dvh] w-full bg-black overflow-hidden flex justify-center font-sans">
+              {/* ✨ 原版背景圖回歸 ✨ */}
               <div className="absolute inset-0 z-0 bg-cover bg-center" style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1552611052-33e04de081de?q=80&w=1000")' }}></div>
 
               <div className="relative z-10 w-full max-w-md h-[100dvh] md:h-auto md:max-h-[95vh] md:my-4 flex flex-col bg-black/75 md:rounded-2xl border-none md:border md:border-white/30 backdrop-blur-sm overflow-hidden shadow-2xl">
