@@ -66,8 +66,9 @@
             spicy: ["不辣", "微辣", "小辣", "中小辣", "中辣", "中大辣", "大辣", "勁辣"],
             noodles: { "米線": 0, "紅薯粉": 2, "水晶粉": 2, "菜底": 3 },
             toppings: {
-              "酸菜": 6, "蘿蔔": 6, "芽菜": 6, "海帶": 6, "通菜": 6, "菜心": 6, "唐生菜": 6, "芥蘭": 6,
-              "紫菜": 8, "竹笙": 8, "黑木耳": 8, "腐竹": 8, "鮮冬菇": 8, "豬小肚": 10, "雞絲": 10, "炸醬": 10,
+              "酸菜": 6, "芽菜": 6, "海帶": 6, "通菜": 6, "唐生菜": 6,
+              "蘿蔔": 8, "腐竹": 8, "螺旋藻": 8, "芥蘭": 8, "紫菜": 8, "菜心": 8,
+              "豬小肚": 10, "雞絲": 10, "炸醬": 10,
               "腩肉": 10, "豬紅": 10, "豬肚": 10, "豬皮": 10, "冬菇": 10, "魚蛋": 10, "魚肉春卷": 12, "雲吞": 12,
               "燕皮肉餃": 12, "肥牛": 12, "豬扒": 12, "豬頸肉": 12, "蟹子丸": 12, "墨魚丸": 12, "豬耳": 12,
               "日本鱈魚豆腐": 15, "墨魚頭": 15, "豬軟骨": 15, "鮮竹龍蝦卷": 15, "鴨腎": 15
@@ -184,7 +185,6 @@
 
               if (cat === "topping") {
                 if (value === "全部隨機") {
-                  // ✨ 完美修復「全部隨機」Bug
                   if (currentCat.includes("全部隨機")) {
                      const uniquePrices = [...new Set(Object.values(tPrices))].sort((a, b) => a - b);
                      currentCat = uniquePrices.map(p => `隨機_${p}`);
@@ -224,7 +224,7 @@
                      }
                   }
                 }
-                newFilters.topping = currentCat; // 確保變數更新正確寫入
+                newFilters.topping = currentCat;
               } else {
                 if (value === "隨機") {
                   newFilters[cat] = ["隨機"];
@@ -284,7 +284,6 @@
                 
                 <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar">
                   
-                  {/* 標題與介紹詞 */}
                   <div className="mb-8 text-center pt-2">
                     <h1 className="text-2xl font-bold text-white mb-3">🥢 米線我媽卡些 (Omakase)</h1>
                     <p className="text-gray-300 text-sm leading-relaxed bg-white/10 p-3 rounded-lg border border-white/10 shadow-inner">
@@ -343,7 +342,6 @@
                     ))}
                   </div>
 
-                  {/* 生成結果區域 */}
                   <div className="mt-8">
                     <div className="text-lg text-white font-bold text-center leading-relaxed whitespace-pre-wrap bg-white/20 p-5 rounded-xl border border-amber-500/50 shadow-[0_0_15px_rgba(245,158,11,0.2)]">
                       {resultText}
@@ -353,7 +351,6 @@
                   <div className="h-40 w-full flex-shrink-0"></div>
                 </div>
 
-                {/* 底部按鈕 */}
                 <div className="absolute bottom-0 left-0 right-0 px-4 pt-16 pb-[calc(1.5rem+env(safe-area-inset-bottom))] bg-gradient-to-t from-black via-black/95 to-transparent pointer-events-none">
                   <button onClick={generateMixian} className="w-full bg-[#D35400] hover:bg-[#E67E22] text-white text-xl font-bold py-4 rounded-full shadow-lg transform active:scale-95 transition-all pointer-events-auto">
                     ✍️ 唔該，落單！
